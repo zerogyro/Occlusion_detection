@@ -108,13 +108,111 @@ class Kernel_tool(object):
         new_cam = np.asarray(new_cam)
         return new_velo, new_cam, png
 
-    def debug(self):
-        # print(self.test_dir)
-        print("debug mode")
+    def get_mapping_dict(self, new_velo, new_cam):
+        """
+        this function generate two mapping dictionaries from pcd2img and img2pcd
+        input: new_velo, new_cam from preprocesing mapped points from point cloud data and image frame
+        output: cam2pc_dict, pc2cam_dict
+        """
+        u, v, d = new_cam
+        x, y, z, k = new_velo
+        l = len(u)
+        cam2pc_dict = {}
+        pc2cam_dict = {}
+        for i in range(l):
+            cam2pc_dict[u[i], v[i]] = [x[i], y[i], z[i]]
+            pc2cam_dict[x[i], y[i], z[i]] = [u[i], v[i]]
+        return cam2pc_dict, pc2cam_dict
+
+    def sorting_frame(self, new_velo, new_cam):
+        """
+        sort new_velo and new_cam according to the pixel location of the frame
+        input: new_velo, new_cam after mapping
+        output: new_velo, new_cam after sorting
+        """
+
+        new_cam_t = new_cam.T
+        new_velo_t = new_velo.T
+
+        new_cam_t = np.array(new_cam_t)
+
+        # a = np.array([(3, 2), (6, 2), (3, 6), (3, 4), (5, 3)])
+
+        ind = np.lexsort((new_cam_t[:, 1], new_cam_t[:, 0]))
+
+        res_new_cam_T = new_cam_t[ind]
+        res_new_velo_T = new_velo_t[ind]
+
+        ################################################################
+        new_cam, new_velo = res_new_cam_T.T, res_new_velo_T.T
+        return new_velo, new_cam
+
+    def kernel_method(self, debug=False):
+        png = mpimg.imread(self.img_path)
+
+        new_velo, new_cam, png = self.get_mapped_points()
+        IMG_H, IMG_W, _ = png.shape
+        clean = np.zeros((IMG_H, IMG_W, 3))
+        new_velo, new_cam = self.sorting_frame(new_velo, new_cam)
+
+        new_velo_T, new_cam_T = new_velo.T, new_cam.T
+
+        cam2pc_dict, pc2cam_dict = self.get_mapping_dict(new_velo, new_cam)
+
+        key_u, key_v, out = self.filtering(new_cam, new_cam_T, cam2pc_dict)
+
+        if debug:
+            print("debug mode")
+
+        return key_u, key_v, out
+
+    def gate(self, loc, cam2pc_dict, gate_size=-1.6):
+        cam2pc_key = (loc[0], loc[1])
+        pc_v = cam2pc_dict[cam2pc_key]
+        pc_z = pc_v[2]
+        # print(pc_z,'----------------------------------')
+        if pc_z < -1.2:
+            return False
+        return True
+
+    def get_range_from_loc(self, cam, loc, size, std_thresh, out, key_u, key_v):
+        # out = []
+        u, v, d = cam
+        # x,y,z,k = c
+        # print(b.shape, c.shape)
+        mid_u, mid_v = loc
+
+        u_in = np.logical_and(u > mid_u - size, u < mid_u + size)
+        v_in = np.logical_and(v > mid_v - size, v < mid_v + size)
+        inlier = np.logical_and(u_in, v_in)
+
+        v = np.std(d[inlier])
+        if v > std_thresh:
+            # print(loc)
+            # print("std:", v)
+            key_u.append(loc[0])
+            key_v.append(loc[1])
+            out.append(v)
+
+    def filtering(self, new_cam, new_cam_T, cam2pc_dict):
+        out = []
+        key_u = []
+        key_v = []
+
+        for i in new_cam_T:
+            loc = i[:2]
+            if self.gate(loc, cam2pc_dict):
+                self.get_range_from_loc(new_cam, loc, 4, 3, out, key_u, key_v)
+            # break
+
+        return key_u, key_v, out
 
 
 if __name__ == "__main__":
     args = parse_args_and_config()
     k_tool = Kernel_tool(args=args)
-    _, _, _ = k_tool.get_mapped_points()
-    k_tool.debug()
+    # _, _, _ = k_tool.get_mapped_points()
+    # k_tool.debug()
+
+    key_u, key_v, out = k_tool.kernel_method(debug=True)
+    print(len(key_u), len(key_v), out)
