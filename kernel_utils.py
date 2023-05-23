@@ -62,13 +62,8 @@ def parse_args_and_config():
     return args
 
 
-# initialize a kernel method class
-
-
 class Kernel_tool(object):
     def __init__(self, args):
-        # TODO: get_trainsition_matrix from args
-
         self.bin_path = os.path.join(args.test_folder, args.bin_path)
         self.img_path = os.path.join(args.test_folder, args.img_path)
 
@@ -208,11 +203,14 @@ class Kernel_tool(object):
         return key_u, key_v, out
 
 
-if __name__ == "__main__":
-    args = parse_args_and_config()
-    k_tool = Kernel_tool(args=args)
-    # _, _, _ = k_tool.get_mapped_points()
-    # k_tool.debug()
+args = parse_args_and_config()
+k_tool = Kernel_tool(args=args)
+# _, _, _ = k_tool.get_mapped_points()
+# k_tool.debug()
 
-    key_u, key_v, out = k_tool.kernel_method(debug=True)
+key_u, key_v, out = k_tool.kernel_method(debug=True)
+
+if __name__ == "__main__":
     print(len(key_u), len(key_v), out)
+
+    print(out)
