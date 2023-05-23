@@ -1,6 +1,6 @@
 import numpy as np
 
-from kernel_utils import key_u, key_v, cam2pc_dict
+from main import key_u, key_v, cam2pc_dict
 import math
 import cv2
 from sklearn.cluster import KMeans

@@ -43,11 +43,21 @@ kernel_utils.py --key_u,key_v, out: filtering the keypoints and return u,v and o
 
 
 **task list TODO**
+
+## **TASK LIST TODO**
+
 - [x] Depth conversion in tool 
 - [ ] Detecting key points using filter A
 - [ ] Detecting key points using filter B
 - [ ] run with one argument 
-- [ ] 
+### task list may 24
+- [ ] detecting key points using filter A in general
+- [ ] combining the processing for producing key points
+
+- [ ] detecting key points using filter A in sparse
+
+
+
 
 
 
