@@ -63,3 +63,43 @@ kernel_utils.py --key_u,key_v, out: filtering the keypoints and return u,v and o
 
 ----------------------------------------------------------------
 OD_comp : vis_3d: tools for using open3d to visualize point clouds
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#   FOR POST KERNEL METHOD
+##  OCCLUSION DETECTION IS ALREADY FINISHED. HOWEVER, WITH EXTRA HEIGHT INFORMATION WE COULD DETERMINE STUFF.

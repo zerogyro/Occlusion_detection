@@ -102,8 +102,10 @@ class Kernel_tool(object):
         self.IMG_W = 1242
         self.pcd = pcd
         self.cam = cam
+        self.polar_pcd = convert_polar(self.pcd)
         self.std_threshold = 3
         self.kernel_size = 4
+        self.post_kernel_size = 5
         self.np_loc = None
 
         self.key_u, self.key_v, _ = self.kernel_method(debug=False)
@@ -227,8 +229,9 @@ class Kernel_tool(object):
         # print(kernel_cam2pc_dict)
         return kernel_cam2pc_dict
 
-    def post_kernel_method(self, loc, size=5):
+    def post_kernel_method(self, loc):
         np_loc = self.np_loc
+        size = self.post_kernel_size
         key_u, key_v = self.key_u, self.key_v
         # print('start kernel method')
         # first get kernel size
@@ -373,7 +376,7 @@ cam2pc_dict, pc2cam_dict = kernel_tool.get_mapping_dict()
 kernel_cam2pc_dict = kernel_tool.get_kernel_dict(key_v, key_u)
 
 plot_dict = kernel_tool.kernel_plot_dict()
-
+polar_pcd = kernel_tool.polar_pcd
 
 # def get_kernel_dict(self, key_v, key_u):
 #     cam2pc_dict, pc2cam_dict = self.get_mapping_dict()
