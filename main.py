@@ -41,7 +41,11 @@ new_velo, new_cam = a.get_mapped_points()
 kernel_tool = Kernel_tool(new_velo, new_cam)
 key_u, key_v, out = kernel_tool.kernel_method(debug=True)
 cam2pc_dict, pc2cam_dict = kernel_tool.get_mapping_dict()
+kernel_cam2pc_dict = kernel_tool.get_kernel_dict(key_v, key_u)
+plot_dict = kernel_tool.kernel_plot_dict()
 
+# kernel_dict = kernel_tool.get_kernel_dict(key_u, key_v)
+# print(kernel_dict)
 # if __name__ == "__main__":
 #     args = parse_args_and_config()
 #     from utils import Depth_converter, Kernel_tool

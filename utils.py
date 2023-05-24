@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import argparse
+import math
+from sklearn.cluster import KMeans
 import matplotlib.image as mpimg
 from matplotlib.cm import get_cmap
 
@@ -32,6 +34,22 @@ def get_transition_matrix():
     Tr_velo_to_cam = np.insert(Tr_velo_to_cam, 3, values=[0, 0, 0, 1], axis=0)
 
     return P2, R0_rect, Tr_velo_to_cam
+
+
+def convert_polar(np_pcd):
+    np_xy = np.array(np_pcd[:, :-1], dtype=object)
+    polar_index = []
+    # print('start')
+    check = []
+    for pair in np_xy:
+        r = math.sqrt(pair[0] ** 2 + pair[1] ** 2)
+        theta = (math.atan2(pair[0], pair[1]) / math.pi) * 180
+        polar_index.append([theta, r])
+        # check.append([theta, r, pair[0], pair[1]])
+    # print(polar_index)
+    polar_index = np.array(polar_index)
+    # check = np.array(check)
+    return polar_index
 
 
 class Depth_converter(object):
@@ -86,6 +104,9 @@ class Kernel_tool(object):
         self.cam = cam
         self.std_threshold = 3
         self.kernel_size = 4
+        self.np_loc = None
+
+        self.key_u, self.key_v, _ = self.kernel_method(debug=False)
 
     def get_mapping_dict(self):
         """
@@ -188,21 +209,187 @@ class Kernel_tool(object):
 
         return key_u, key_v, out
 
-    # def get_kernel_dict(self, key_v, key_u):
-    #     cam2pc_dict, pc2cam_dict = self.get_mapping_dict()
-    #     print(cam2pc_dict.keys())
+    def get_kernel_dict(self, key_v, key_u):
+        cam2pc_dict, _ = self.get_mapping_dict()
+        np_key_v = np.array(key_v)
+        np_key_u = np.array(key_u)
+        key_len = len(np_key_v)
+        assert key_len == len(np_key_u)
+        np_loc = np.stack((np_key_u, np_key_v), axis=-1)
+        self.np_loc = np_loc
 
-    #     np_key_v = np.array(key_v)
-    #     np_key_u = np.array(key_u)
-    #     key_len = len(np_key_v)
-    #     assert key_len == len(np_key_u)
-    #     np_loc = np.stack((np_key_u, np_key_v), axis=-1)
+        kernel_cam2pc_dict = {}
+        for k in np_loc:
+            # print(k)
+            key = (k[0], k[1])
+            v = cam2pc_dict[key]
+            kernel_cam2pc_dict[key] = v
+        # print(kernel_cam2pc_dict)
+        return kernel_cam2pc_dict
 
-    #     kernel_cam2pc_dict = {}
-    #     for k in np_loc:
-    #         # print(k)
-    #         key = (k[0], k[1])
-    #         v = cam2pc_dict[key]
-    #         kernel_cam2pc_dict[key] = v
-    #     # print(kernel_cam2pc_dict)
-    #     return kernel_cam2pc_dict
+    def post_kernel_method(self, loc, size=5):
+        np_loc = self.np_loc
+        key_u, key_v = self.key_u, self.key_v
+        # print('start kernel method')
+        # first get kernel size
+        # key_v
+        # key_u
+        # print(len(key_u),len(key_v))
+
+        # print('preprocessing kernel method for kernel_uv, kernel_pcd, kernel_polar')
+        mid_u, mid_v = loc
+        # print(mid_u, mid_v)
+
+        # print(key_u[0],key_v[0])
+        u_in = np.logical_and(key_u > mid_u - size, key_u < mid_u + size)
+        v_in = np.logical_and(key_v > mid_v - size, key_v < mid_v + size)
+        inlier = np.logical_and(u_in, v_in)
+
+        # print(inlier)
+
+        kernel_uv = np_loc[inlier]
+        kernel_pcd = []
+        for key_cam in kernel_uv:
+            key_cam = (key_cam[0], key_cam[1])
+            kernel_xyz = kernel_cam2pc_dict[key_cam]
+            kernel_pcd.append(kernel_xyz)
+            # print(kernel_xyz)
+        kernel_pcd = np.array(kernel_pcd)
+        kernel_polar = convert_polar(kernel_pcd)
+        # print(a)
+        # print(kernel_pcd)
+        # print(kernel_polar)
+
+        return kernel_uv, kernel_pcd, kernel_polar
+
+    def process_kernel_polar(self, kernel_polar):
+        # print(kernel_polar)
+        kernel_polar_T = kernel_polar.T
+
+        theta, rho = kernel_polar_T
+        # print(theta,rho)
+        # rho_r = np.reshape(rho,(1,-1))
+        kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(kernel_polar)
+        # print(kmeans.cluster_centers_)
+        # print(kmeans.labels_)
+        # print('-------------------------------------------------------------------------')
+        # print(kmeans.cluster_centers_[:,1])
+
+        zero_key = kmeans.cluster_centers_[:, 1][0]
+        one_key = kmeans.cluster_centers_[:, 1][1]
+
+        # print(zero_key,one_key)
+
+        # selecting low and high values
+        # low = kmeans.cluster_centers_[:,1][0]
+
+        select_lower = kmeans.labels_.astype(bool)
+        select_higher = np.logical_not(select_lower)
+
+        if zero_key < one_key:
+            select_lower, select_higher = select_higher, select_lower
+
+        kernel_low = kernel_polar[select_lower][:, 1]
+        kernel_high = kernel_polar[select_higher][:, 1]
+
+        # print(kernel_low,kernel_high)
+        # print(kernel_low.max())
+        # print(kernel_high.min())
+        kernel_theta = kernel_polar[:, 0]
+        res_rho_range = [kernel_low.max(), kernel_high.min()]
+        res_theta_range = [kernel_theta.min(), kernel_theta.max()]
+
+        # print(res_theta_range, res_rho_range)
+        return res_theta_range, res_rho_range
+
+    def kernel_plot_dict(self):
+        """generating kernel size in polar as key, distance as value
+
+        Returns:
+            plot_dict: dictionary
+        """
+        plot_dict = {}
+        # print(self.np_loc)
+
+        # print("debuging line 311")
+        for loc in self.np_loc:
+            _, _, kernel_polar = self.post_kernel_method(loc)
+            # print(kernel_polar.shape)
+            if kernel_polar.shape[0] < 4:
+                continue
+            theta_range, rho_range = self.process_kernel_polar(kernel_polar)
+
+            # for changing
+
+            theta_key = (theta_range[0], theta_range[1])
+            plot_dict[theta_key] = rho_range
+        # print(plot_dict)
+        return plot_dict
+
+
+import argparse
+import utils
+
+
+def parse_args_and_config():
+    parser = argparse.ArgumentParser(description=globals()["__doc__"])
+    # file_config
+    parser.add_argument(
+        "--file_name",
+        type=str,
+        required=False,
+        default="aaa",
+        help="filename for path to processing file",
+    )
+    parser.add_argument(
+        "--test_folder",
+        type=str,
+        default="test_data",
+        help="directory for occlusion area conversion",
+    )
+    parser.add_argument(
+        "--bin_path",
+        type=str,
+        default="0000000000.bin",
+        help="path for point cloud file",
+    )
+    parser.add_argument(
+        "--img_path", type=str, default="0000000000.png", help="path for image file"
+    )
+    args = parser.parse_args()
+
+    return args
+
+
+args = parse_args_and_config()
+from utils import Depth_converter, Kernel_tool
+
+a = Depth_converter(args)
+new_velo, new_cam = a.get_mapped_points()
+
+kernel_tool = Kernel_tool(new_velo, new_cam)
+key_u, key_v, out = kernel_tool.kernel_method(debug=True)
+cam2pc_dict, pc2cam_dict = kernel_tool.get_mapping_dict()
+kernel_cam2pc_dict = kernel_tool.get_kernel_dict(key_v, key_u)
+
+plot_dict = kernel_tool.kernel_plot_dict()
+
+
+# def get_kernel_dict(self, key_v, key_u):
+#     cam2pc_dict, pc2cam_dict = self.get_mapping_dict()
+#     print(cam2pc_dict.keys())
+
+#     np_key_v = np.array(key_v)
+#     np_key_u = np.array(key_u)
+#     key_len = len(np_key_v)
+#     assert key_len == len(np_key_u)
+#     np_loc = np.stack((np_key_u, np_key_v), axis=-1)
+
+#     kernel_cam2pc_dict = {}
+#     for k in np_loc:
+#         # print(k)
+#         key = (k[0], k[1])
+#         v = cam2pc_dict[key]
+#         kernel_cam2pc_dict[key] = v
+#     # print(kernel_cam2pc_dict)
+#     return kernel_cam2pc_dict

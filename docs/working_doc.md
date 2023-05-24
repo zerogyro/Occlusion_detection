@@ -1,7 +1,10 @@
 ## **TODO LIST**
+- [ ] implementation of kernel method: A
+    unordered point cloud and its corresponding depth map
+
+    at this moment is the 
+
+- [ ] implementation of kernel method: A
+    sparse point cloud and its corresponding depth map
 
 
-- [ ] merge kernel_method and utils
-- [ ] remove double filtering process
-- [ ] filter kernel method A 
-- [ ] filter kernel method A with sparse depth map 
