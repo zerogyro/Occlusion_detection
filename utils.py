@@ -187,3 +187,22 @@ class Kernel_tool(object):
         key_u, key_v, out = self.filtering(new_cam, cam2pc_dict)
 
         return key_u, key_v, out
+
+    # def get_kernel_dict(self, key_v, key_u):
+    #     cam2pc_dict, pc2cam_dict = self.get_mapping_dict()
+    #     print(cam2pc_dict.keys())
+
+    #     np_key_v = np.array(key_v)
+    #     np_key_u = np.array(key_u)
+    #     key_len = len(np_key_v)
+    #     assert key_len == len(np_key_u)
+    #     np_loc = np.stack((np_key_u, np_key_v), axis=-1)
+
+    #     kernel_cam2pc_dict = {}
+    #     for k in np_loc:
+    #         # print(k)
+    #         key = (k[0], k[1])
+    #         v = cam2pc_dict[key]
+    #         kernel_cam2pc_dict[key] = v
+    #     # print(kernel_cam2pc_dict)
+    #     return kernel_cam2pc_dict
