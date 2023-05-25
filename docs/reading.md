@@ -38,3 +38,60 @@ https://zhuanlan.zhihu.com/p/291644762
 https://medium.com/yodayoda/from-depth-map-to-point-cloud-7473721d3f
 
 https://math.stackexchange.com/questions/1003801/inverse-of-an-invertible-upper-triangular-matrix-of-order-3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://zhuanlan.zhihu.com/p/78798251
+clustering method
+https://zhuanlan.zhihu.com/p/548058662
+
+## notes for k=means
+	1. Initialize k samples for center of clusters a = a1, a2, a3... ak
+	2. Calculating xi for k center points and assign points in its cluster
+	3. for each cluster aj, recalculate the cluster point aj = 1/ci sum x
+	4. repeat 23
+
+
+
+
+
+
+## Psudo code for kmeans
+
+	Acquiring n data with m dimension
+	Randomly generate k data with m dimension
+	while(t):
+		for i in n:
+			for j in k:
+				calculating i to j Euclidean distance		
+		for i in k:
+			1. find the cluster points
+			2. change center points of data
+	end
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,3 +5,7 @@ __pycache__/main.cpython-38.pyc
 __pycache__/main.cpython-39.pyc
 temp/kernel_utils.py
 eee.jpg
+__pycache__/utils_.cpython-38.pyc
+canvas.png
+.gitignore
+occlusion_area.jpg

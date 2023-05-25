@@ -52,6 +52,34 @@ def convert_polar(np_pcd):
     return polar_index
 
 
+def convert_rawpcd_polar(raw_pcd):
+    """raw_pcd with shape (4, n)
+        4 : x, y ,z i
+        n : number of points
+    Args:
+        raw_pcd in  kernel_tool.pcd
+    Returns:
+        polar_pcd in numpy matrix
+    """
+    xyz_pcd = raw_pcd[:3, :]
+    xyz_pcd = xyz_pcd.T
+
+    ### xyz_pcd with shape (n,3)
+    np_xy = np.array(xyz_pcd[:, :-1], dtype=object)
+    polar_index = []
+    # print('start')
+    check = []
+    for pair in np_xy:
+        r = math.sqrt(pair[0] ** 2 + pair[1] ** 2)
+        theta = (math.atan2(pair[0], pair[1]) / math.pi) * 180
+        polar_index.append([theta, r])
+        # check.append([theta, r, pair[0], pair[1]])
+    # print(polar_index)
+    polar_index = np.array(polar_index)
+    # check = np.array(check)
+    return polar_index
+
+
 class Depth_converter(object):
     def __init__(self, args):
         # TODO: get_trainsition_matrix from args
@@ -102,9 +130,9 @@ class Kernel_tool(object):
         self.IMG_W = 1242
         self.pcd = pcd
         self.cam = cam
-        self.polar_pcd = convert_polar(self.pcd)
-        self.std_threshold = 3
-        self.kernel_size = 4
+        self.polar_pcd = convert_rawpcd_polar(self.pcd)
+        self.std_threshold = 1
+        self.kernel_size = 5
         self.post_kernel_size = 5
         self.np_loc = None
 
@@ -376,23 +404,6 @@ cam2pc_dict, pc2cam_dict = kernel_tool.get_mapping_dict()
 kernel_cam2pc_dict = kernel_tool.get_kernel_dict(key_v, key_u)
 
 plot_dict = kernel_tool.kernel_plot_dict()
+
+
 polar_pcd = kernel_tool.polar_pcd
-
-# def get_kernel_dict(self, key_v, key_u):
-#     cam2pc_dict, pc2cam_dict = self.get_mapping_dict()
-#     print(cam2pc_dict.keys())
-
-#     np_key_v = np.array(key_v)
-#     np_key_u = np.array(key_u)
-#     key_len = len(np_key_v)
-#     assert key_len == len(np_key_u)
-#     np_loc = np.stack((np_key_u, np_key_v), axis=-1)
-
-#     kernel_cam2pc_dict = {}
-#     for k in np_loc:
-#         # print(k)
-#         key = (k[0], k[1])
-#         v = cam2pc_dict[key]
-#         kernel_cam2pc_dict[key] = v
-#     # print(kernel_cam2pc_dict)
-#     return kernel_cam2pc_dict
