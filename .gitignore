@@ -9,3 +9,5 @@ __pycache__/utils_.cpython-38.pyc
 canvas.png
 .gitignore
 occlusion_area.jpg
+__pycache__/projection.cpython-38.pyc
+__pycache__/sensor_fusion.cpython-38.pyc

@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import cv2
 
 
+#def vis_sparse_depthmap(sparse_depthmap):
+    
+
+
+
 def polar_plot(pcd_polar, plot_dict, gray_scale):
     HEIGHT = 576  # 48x12 (rho)
     WIDTH = 672  # 84 x 8

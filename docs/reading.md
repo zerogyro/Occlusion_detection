@@ -45,9 +45,9 @@ https://math.stackexchange.com/questions/1003801/inverse-of-an-invertible-upper-
 
 
 
+intrinsic camera
 
-
-
+http://ksimek.github.io/2013/08/13/intrinsic/
 
 
 
