@@ -5,8 +5,7 @@ import math
 from sklearn.cluster import KMeans
 import matplotlib.image as mpimg
 from matplotlib.cm import get_cmap
-
-
+from scipy.interpolate import LinearNDInterpolator
 def get_transition_matrix():
     """This function returns the transition matrix from calibration between Lidar and mono-camera
 
@@ -95,17 +94,11 @@ def get_sparse_depthmap(new_cam):
     
     return sparse_depthmap 
 
+
+
 if __name__ == '__main__':
     bin_path = 'test_data/0000000000.bin'
     img_path = 'test_data/0000000000.png'
     
     new_velo, new_cam = get_mapped_points(bin_path, img_path)
     s_dmap = get_sparse_depthmap(new_cam)
-    
-    for row in s_dmap:
-        for i in row:
-            print(i)
-    
-    print(s_dmap)
-    print(type(s_dmap))
-
