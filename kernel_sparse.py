@@ -4,34 +4,110 @@ import argparse
 import math
 from sklearn.cluster import KMeans
 import matplotlib.image as mpimg
-from matplotlib.cm import get_cmap
 
 
-def get_transition_matrix():
-    """This function returns the transition matrix from calibration between Lidar and mono-camera
+from sensor_fusion import get_mapped_points, get_sparse_depthmap, get_cam2velo_int
+bin_path = 'test_data/0000000000.bin'
+img_path = 'test_data/0000000000.png'
+    
+new_velo, new_cam = get_mapped_points(bin_path, img_path)
+s_dmap = get_sparse_depthmap(new_cam)
+cam2velo_dict = get_cam2velo_int(new_velo, new_cam)
 
-    Returns:
-        numpy.matrix Transition Matrix
 
-    """
-    calib_file = "calib/calib.txt"
-    with open(calib_file, "r") as f:
-        calib = f.readlines()
+IMG_H = 375
+IMG_W = 1242
+def general_kernel_process(s_dmap):
+    # sliding window through whole sparse map
+    # window_h, window_w, std_thresh
 
-    # P2 (3 x 4) for left eye
-    P2 = np.matrix([float(x) for x in calib[2].strip("\n").split(" ")[1:]]).reshape(
-        3, 4
-    )
-    R0_rect = np.matrix(
-        [float(x) for x in calib[4].strip("\n").split(" ")[1:]]
-    ).reshape(3, 3)
-    # Add a 1 in bottom-right, reshape to 4 x 4
-    R0_rect = np.insert(R0_rect, 3, values=[0, 0, 0], axis=0)
-    R0_rect = np.insert(R0_rect, 3, values=[0, 0, 0, 1], axis=1)
-    Tr_velo_to_cam = np.matrix(
-        [float(x) for x in calib[5].strip("\n").split(" ")[1:]]
-    ).reshape(3, 4)
-    Tr_velo_to_cam = np.insert(Tr_velo_to_cam, 3, values=[0, 0, 0, 1], axis=0)
 
-    return P2, R0_rect, Tr_velo_to_cam
 
+    img_h, img_w = s_dmap.shape
+    assert img_h == IMG_H and img_w == IMG_W
+    
+    window_h = 5 
+    window_w = 5 
+    std_threshold = 2 
+     
+     
+     
+    res_keypoint = {}
+    for r_s in range(0,img_h +1 - window_h):
+        for c_s in range(0, img_w +1 - window_w):
+            # retriving points within window
+            window = s_dmap[r_s:r_s+window_h,c_s:c_s+window_w]
+            # get !0 depth 
+            new_window = window[np.where(window!=0)]
+
+            
+            if new_window.any():
+                # getting keypoints
+                # std:
+                #std = sqrt(mean(x)), where x = abs(a - a.mean())**2.
+                std_index = np.std(new_window)
+    
+                
+                if std_index> std_threshold:
+                    #print(new_window)
+                    res_keypoint[(r_s, c_s)] = std_index
+    return res_keypoint
+             
+
+
+
+#kernel tool for sparse map
+def kernel_a(s_dmap):
+    img_h, img_w = s_dmap.shape
+    assert img_h == IMG_H and img_w == IMG_W
+    
+    window_h = 5 
+    window_w = 5 
+    std_threshold = 2
+     
+     
+     
+    for r_s in range(0,img_h +1 - window_h):
+        for c_s in range(0, img_w +1 - window_w):
+            # retriving points within window
+            window = s_dmap[r_s:r_s+window_h,c_s:c_s+window_w]
+            # get !0 depth 
+            new_window = window[np.where(window!=0)]
+
+            
+            if new_window.any():
+                # getting keypoints
+                # std:
+                #std = sqrt(mean(x)), where x = abs(a - a.mean())**2.
+                std_index = np.std(new_window)
+    
+                
+                if std_index> std_threshold:
+                    #print(new_window)
+                    #res_keypoint[(r_s, c_s)] = std_index
+                    filter(window, r_s, c_s)
+    
+def filter(window, u , v):
+    # this is already kernel window with huge std
+
+    non_zero_index= np.where(window!=0)
+    print(u,v)
+    print(window)
+    print(non_zero_index)
+    
+    exit()
+    
+def vis_kernel(res_keypoint, s_dmap):
+    new_sdmap = s_dmap
+    for key in res_keypoint.keys():
+        new_sdmap[key[0], key[1]] = 128
+    return new_sdmap
+    
+
+
+
+
+
+ 
+#res_keypoint = kernel_process(s_dmap)
+res_keypoint = kernel_a(s_dmap)

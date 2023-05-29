@@ -75,9 +75,21 @@ def get_mapped_points(bin_path, img_path):
     new_cam = np.asarray(new_cam)
     return new_velo, new_cam
 
+def get_cam2velo_int(new_velo, new_cam):
+    xyz = new_velo[:3,:]
+    xyz = xyz.T
+    u,v,d = new_cam
+    res_vel2cam_dict = {}
+    u = u.astype(int)
+    v = v.astype(int)
+    uv = np.stack((u,v))
+    uv_list = uv.T
+    for i, pair in enumerate(uv_list):
+        res_vel2cam_dict[(pair[0], pair[1])]= xyz[i]
+    return res_vel2cam_dict
 
 
-    
+#####WARNING: SPARSE_DEPTHMAP SHAPE 
 def get_sparse_depthmap(new_cam):
     u,v,z = new_cam 
     u = u.astype(int)
@@ -102,3 +114,5 @@ if __name__ == '__main__':
     
     new_velo, new_cam = get_mapped_points(bin_path, img_path)
     s_dmap = get_sparse_depthmap(new_cam)
+
+    

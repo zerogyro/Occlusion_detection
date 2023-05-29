@@ -12,3 +12,5 @@ occlusion_area.jpg
 __pycache__/projection.cpython-38.pyc
 __pycache__/sensor_fusion.cpython-38.pyc
 __pycache__/vis_utils.cpython-38.pyc
+kernel_sparse.py
+__pycache__/kernel_sparse.cpython-38.pyc

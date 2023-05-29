@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.image as mpimg
 def get_transition_matrix():
-    calib_file = "calib/calib.txt"
+    calib_file = "/Users/godjinyu/code/Occlusion_detection/calib/calib.txt"
     with open(calib_file, "r") as f:
         calib = f.readlines()
 
@@ -24,25 +24,25 @@ def get_transition_matrix():
 
 
 P2, R0_rect, Tr_velo_to_cam = get_transition_matrix()
-m1 = P2 * R0_rect * Tr_velo_to_cam
+# m1 = P2 * R0_rect * Tr_velo_to_cam
 
-K = np.array([[0.58, 0, 0.5, 0],
-[0, 1.92, 0.5, 0],
-[0, 0, 1, 0],
-[0, 0, 0, 1]], dtype=np.float32)
+# K = np.array([[0.58, 0, 0.5, 0],
+# [0, 1.92, 0.5, 0],
+# [0, 0, 1, 0],
+# [0, 0, 0, 1]], dtype=np.float32)
 
-Rt = R0_rect* Tr_velo_to_cam
+# Rt = R0_rect* Tr_velo_to_cam
 
-m2 = K*Rt
+# m2 = K*Rt
 
 
-print("#############P2")
-print(P2)
-print("#############R0")
-print(R0_rect)
+# print("#############P2")
+# print(P2)
+# print("#############R0")
+# print(R0_rect)
 
-print("#############Tr_velocam")
-print(Tr_velo_to_cam)
+# print("#############Tr_velocam")
+# print(Tr_velo_to_cam)
 
 
 def get_mapped_points(bin_path, img_path):
