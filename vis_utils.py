@@ -2,14 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
+
 def vis_sparse_dmap(s_dmap):
     where_0 = np.where(s_dmap == 0)
     s_dmap = s_dmap / np.max(s_dmap)
-    s_dmap[where_0] = 255 
+    s_dmap[where_0] = 255
 
     return s_dmap
     # plt.imshow(s_dmap, cmap='binary')
-    # return 
+    # return
+
 
 def polar_plot(pcd_polar, plot_dict, gray_scale):
     HEIGHT = 576  # 48x12 (rho)

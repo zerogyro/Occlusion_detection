@@ -6,6 +6,8 @@ from sklearn.cluster import KMeans
 import matplotlib.image as mpimg
 from matplotlib.cm import get_cmap
 from scipy.interpolate import LinearNDInterpolator
+
+
 def get_transition_matrix():
     """This function returns the transition matrix from calibration between Lidar and mono-camera
 
@@ -35,11 +37,7 @@ def get_transition_matrix():
     return P2, R0_rect, Tr_velo_to_cam
 
 
-
-
-
 P2, R0_rect, Tr_velo_to_cam = get_transition_matrix()
-
 
 
 def get_mapped_points(bin_path, img_path):
@@ -75,44 +73,41 @@ def get_mapped_points(bin_path, img_path):
     new_cam = np.asarray(new_cam)
     return new_velo, new_cam
 
+
 def get_cam2velo_int(new_velo, new_cam):
-    xyz = new_velo[:3,:]
+    xyz = new_velo[:3, :]
     xyz = xyz.T
-    u,v,d = new_cam
+    u, v, d = new_cam
     res_vel2cam_dict = {}
     u = u.astype(int)
     v = v.astype(int)
-    uv = np.stack((u,v))
+    uv = np.stack((u, v))
     uv_list = uv.T
     for i, pair in enumerate(uv_list):
-        res_vel2cam_dict[(pair[0], pair[1])]= xyz[i]
+        res_vel2cam_dict[(pair[0], pair[1])] = xyz[i]
     return res_vel2cam_dict
 
 
-#####WARNING: SPARSE_DEPTHMAP SHAPE 
+#####WARNING: SPARSE_DEPTHMAP SHAPE
 def get_sparse_depthmap(new_cam):
-    u,v,z = new_cam 
+    u, v, z = new_cam
     u = u.astype(int)
     v = v.astype(int)
     assert u.dtype == int
-    uv = np.stack((u,v))
+    uv = np.stack((u, v))
     uv_list = uv.T
 
     # init depth map
     sparse_depthmap = np.zeros((375, 1242))
-    for i,pixel_loc in enumerate(uv_list):
-        sparse_depthmap[pixel_loc[1],pixel_loc[0]] = z[i] 
-    
-    
-    return sparse_depthmap 
+    for i, pixel_loc in enumerate(uv_list):
+        sparse_depthmap[pixel_loc[1], pixel_loc[0]] = z[i]
+
+    return sparse_depthmap
 
 
+if __name__ == "__main__":
+    bin_path = "test_data/0000000000.bin"
+    img_path = "test_data/0000000000.png"
 
-if __name__ == '__main__':
-    bin_path = 'test_data/0000000000.bin'
-    img_path = 'test_data/0000000000.png'
-    
     new_velo, new_cam = get_mapped_points(bin_path, img_path)
     s_dmap = get_sparse_depthmap(new_cam)
-
-    

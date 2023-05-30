@@ -131,7 +131,7 @@ class Kernel_tool(object):
         self.pcd = pcd
         self.cam = cam
         self.polar_pcd = convert_rawpcd_polar(self.pcd)
-        self.std_threshold = 1
+        self.std_threshold = 3
         self.kernel_size = 5
         self.post_kernel_size = 5
         self.np_loc = None
