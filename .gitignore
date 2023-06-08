@@ -15,3 +15,10 @@ __pycache__/vis_utils.cpython-38.pyc
 kernel_sparse.py
 __pycache__/kernel_sparse.cpython-38.pyc
 __pycache__/sparse_kernel.cpython-38.pyc
+pha_keypoints/__pycache__/keypoints_detector.cpython-38.pyc
+.gitignore
+.gitignore
+pha_keypoints/__pycache__/sensor_fusion.cpython-38.pyc
+.gitignore
+pha_keypoints/__pycache__/sensor_fusion_utils.cpython-38.pyc
+pha_keypoints/__pycache__/utils.cpython-38.pyc
